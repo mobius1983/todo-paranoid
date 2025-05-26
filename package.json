@@ -1,0 +1,160 @@
+{
+  "name": "todo-paranoid",
+  "displayName": "Code Guardian - Block Forbidden Comments",
+  "description": "Prevents committing code with forbidden comments like //Paranoid, //NOCOMMIT, etc.",
+  "version": "1.0.0",
+  "publisher": "tu-nombre",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Linters"
+  ],
+  "keywords": [
+    "todo",
+    "comments",
+    "blocker",
+    "git",
+    "paranoid",
+    "security"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "todoParanoid.scanWorkspace",
+        "title": "Scan Workspace for Comments",
+        "category": "Code Guardian"
+      },
+      {
+        "command": "todoParanoid.toggleExtension",
+        "title": "Toggle Code Guardian",
+        "category": "Code Guardian"
+      },
+      {
+        "command": "todoParanoid.setupGitHook",
+        "title": "Setup Git Hook Protection",
+        "category": "Code Guardian"
+      },
+      {
+        "command": "todoParanoid.removeGitHook",
+        "title": "Remove Git Hook Protection",
+        "category": "Code Guardian"
+      }
+    ],
+    "configuration": {
+      "title": "Code Guardian",
+      "properties": {
+        "todoParanoid.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable Code Guardian"
+        },
+        "todoParanoid.blockingWords": {
+          "type": "array",
+          "default": [
+            "Paranoid",
+            "NOCOMMIT"
+          ],
+          "description": "Words that BLOCK git commit operations (but allow file saving for testing)"
+        },
+        "todoParanoid.trackingWords": {
+          "type": "array",
+          "default": [
+            "TODO",
+            "FIXME",
+            "BUG",
+            "HACK",
+            "NOTE",
+            "REVIEW",
+            "OPTIMIZE",
+            "XXX"
+          ],
+          "description": "Words that appear in panel for organization but don't block any operations"
+        },
+        "todoParanoid.blockGitOperations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Block git add/commit/push when blocking comments are found"
+        },
+        "todoParanoid.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when forbidden comments are detected"
+        },
+        "todoParanoid.fileExtensions": {
+          "type": "array",
+          "default": [
+            ".js",
+            ".ts",
+            ".jsx",
+            ".tsx",
+            ".py",
+            ".java",
+            ".cpp",
+            ".c",
+            ".cs",
+            ".php",
+            ".rb",
+            ".go"
+          ],
+          "description": "File extensions to scan"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "todoParanoid",
+          "title": "Todo Paranoid",
+          "icon": "$(shield)"
+        }
+      ]
+    },
+    "views": {
+      "todoParanoid": [
+        {
+          "id": "todoParanoidView",
+          "name": "Comments Tracker",
+          "when": "true"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "todoParanoid.scanWorkspace",
+          "when": "view == todoParanoidView",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^4.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/todo-paranoid"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/todo-paranoid/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/todo-paranoid#readme",
+  "license": "MIT",
+  "sponsor": {
+    "url": "https://github.com/sponsors/tu-usuario"
+  }
+}

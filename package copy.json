@@ -1,0 +1,149 @@
+{
+  "name": "code-guardian",
+  "displayName": "Code Guardian - Block Forbidden Comments",
+  "description": "Prevents saving/committing code with forbidden comments like //Paranoid, //NOCOMMIT, etc.",
+  "version": "1.0.0",
+  "publisher": "tu-nombre",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Linters"
+  ],
+  "keywords": [
+    "todo",
+    "comments",
+    "blocker",
+    "git",
+    "paranoid",
+    "security"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codeGuardian.scanWorkspace",
+        "title": "Scan Workspace for Forbidden Comments",
+        "category": "Code Guardian"
+      },
+      {
+        "command": "codeGuardian.toggleExtension",
+        "title": "Toggle Code Guardian",
+        "category": "Code Guardian"
+      }
+    ],
+    "configuration": {
+      "title": "Code Guardian",
+      "properties": {
+        "codeGuardian.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable Code Guardian"
+        },
+        "codeGuardian.blockingWords": {
+          "type": "array",
+          "default": [
+            "Paranoid",
+            "NOCOMMIT",
+            "DONOTCOMMIT"
+          ],
+          "description": "Words that BLOCK git operations but allow file saving (for testing)"
+        },
+        "codeGuardian.trackingWords": {
+          "type": "array",
+          "default": [
+            "TODO",
+            "FIXME",
+            "BUG",
+            "HACK",
+            "NOTE",
+            "REVIEW",
+            "OPTIMIZE"
+          ],
+          "description": "Words that appear in panel but don't block any operations (organizational)"
+        },
+        "codeGuardian.blockGitOperations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Block git add/commit/push when blocking comments are found"
+        },
+        "codeGuardian.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when forbidden comments are detected"
+        },
+        "codeGuardian.fileExtensions": {
+          "type": "array",
+          "default": [
+            ".js",
+            ".ts",
+            ".jsx",
+            ".tsx",
+            ".py",
+            ".java",
+            ".cpp",
+            ".c",
+            ".cs",
+            ".php",
+            ".rb",
+            ".go"
+          ],
+          "description": "File extensions to scan"
+        }
+      }
+    },
+    "views": {
+      "codeGuardian": [
+        {
+          "id": "codeGuardianView",
+          "name": "Comments Tracker",
+          "when": "codeGuardian.enabled"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codeGuardian",
+          "title": "Code Guardian",
+          "icon": "$(shield)"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "codeGuardian.refreshView",
+          "when": "view == codeGuardianView",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/code-guardian"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/code-guardian/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/code-guardian#readme",
+  "license": "MIT",
+  "sponsor": {
+    "url": "https://github.com/sponsors/tu-usuario"
+  }
+}
