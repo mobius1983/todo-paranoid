@@ -2,7 +2,7 @@
   "name": "todo-paranoid",
   "displayName": "Todo Paranoid - Block Forbidden Comments",
   "description": "Prevents committing code with forbidden comments like //PARANOID //NOCOMMIT, etc.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "tu-nombre",
   "engines": {
     "vscode": "^1.74.0"
@@ -32,7 +32,7 @@
       },
       {
         "command": "todoParanoid.toggleExtension",
-        "title": "Toggle Todo Paranoid",
+        "title": "Toggle Todo Paranoid ON/OFF",
         "category": "Todo Paranoid"
       },
       {
@@ -42,7 +42,7 @@
       },
       {
         "command": "todoParanoid.removeGitHook",
-        "title": "Remove Git Hook Protection",
+        "title": "Remove ALL Protections (Git API + Hooks)",
         "category": "Todo Paranoid"
       }
     ],
@@ -52,7 +52,7 @@
         "todoParanoid.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable Todo Paranoid"
+          "description": "Enable/disable Todo Paranoid (controls both Git API and file scanning)"
         },
         "todoParanoid.blockingWords": {
           "type": "array",

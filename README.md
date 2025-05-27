@@ -1,14 +1,14 @@
 # 🛡️ Todo Paranoid - Block Forbidden Comments
 
-[![Version](https://img.shields.io/vscode-marketplace/v/tu-nombre.code-guardian.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.code-guardian)
-[![Downloads](https://img.shields.io/vscode-marketplace/d/tu-nombre.code-guardian.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.code-guardian)
-[![Rating](https://img.shields.io/vscode-marketplace/r/tu-nombre.code-guardian.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.code-guardian)
+[![Version](https://img.shields.io/vscode-marketplace/v/tu-nombre.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.todo-paranoid)
+[![Downloads](https://img.shields.io/vscode-marketplace/d/tu-nombre.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.todo-paranoid)
+[![Rating](https://img.shields.io/vscode-marketplace/r/tu-nombre.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.todo-paranoid)
 
-> **Never commit embarrassing comments again!** Code Guardian prevents you from accidentally committing sensitive comments like `//PARANOID: use fake password` while still allowing you to test your code locally.
+> **Never commit embarrassing comments again!** Todo Paranoid prevents you from accidentally committing sensitive comments like `//PARANOID: use fake password` while still allowing you to test your code locally.
 
 ## 🎯 What Does It Do?
 
-Code Guardian tracks two types of comments in your code:
+Todo Paranoid tracks two types of comments in your code:
 
 ### 🚫 **BLOCKING Comments** (Prevent Commits)
 
@@ -28,31 +28,31 @@ Code Guardian tracks two types of comments in your code:
 ## 🚀 Quick Start
 
 1. **Install** the extension from VS Code Marketplace
-2. **Open any project** - Code Guardian activates automatically
+2. **Open any project** - Todo Paranoid activates automatically
 3. **Look for the shield icon** 🛡️ in your sidebar
 4. **Write a test comment**: `//PARANOID: testing this extension`
 5. **Try to commit** - it will be blocked! 🚫
 
 ## 📸 Screenshots
 
-![Code Guardian Panel](https://raw.githubusercontent.com/tu-usuario/code-guardian/main/images/panel-screenshot.png)
+![Todo Paranoid Panel](https://raw.githubusercontent.com/tu-usuario/todo-paranoid/main/images/panel-screenshot.png)
 _The sidebar panel shows all your comments organized by type_
 
-![Blocking Comment](https://raw.githubusercontent.com/tu-usuario/code-guardian/main/images/blocking-comment.png)
+![Blocking Comment](https://raw.githubusercontent.com/tu-usuario/todo-paranoid/main/images/blocking-comment.png)
 _Blocking comments are highlighted in red and prevent commits_
 
-![Tracking Comments](https://raw.githubusercontent.com/tu-usuario/code-guardian/main/images/tracking-comments.png)
+![Tracking Comments](https://raw.githubusercontent.com/tu-usuario/todo-paranoid/main/images/tracking-comments.png)
 _Tracking comments are highlighted in yellow for organization_
 
 ## ⚙️ Configuration
 
-Open VS Code Settings (`Ctrl+,`) and search for "Code Guardian":
+Open VS Code Settings (`Ctrl+,`) and search for "Todo Paranoid":
 
 ### 🚫 Blocking Words (Prevent Commits)
 
 ```json
 {
-  "codeGuardian.blockingWords": ["PARANOID", "NOCOMMIT", "URGENT", "CRITICAL"]
+  "todoParanoid.blockingWords": ["PARANOID", "NOCOMMIT", "URGENT", "CRITICAL"]
 }
 ```
 
@@ -60,7 +60,7 @@ Open VS Code Settings (`Ctrl+,`) and search for "Code Guardian":
 
 ```json
 {
-  "codeGuardian.trackingWords": [
+  "todoParanoid.trackingWords": [
     "TODO",
     "FIXME",
     "BUG",
@@ -77,10 +77,10 @@ Open VS Code Settings (`Ctrl+,`) and search for "Code Guardian":
 
 ```json
 {
-  "codeGuardian.enabled": true,
-  "codeGuardian.blockGitOperations": true,
-  "codeGuardian.showNotifications": true,
-  "codeGuardian.fileExtensions": [
+  "todoParanoid.enabled": true,
+  "todoParanoid.blockGitOperations": true,
+  "todoParanoid.showNotifications": true,
+  "todoParanoid.fileExtensions": [
     ".js",
     ".ts",
     ".jsx",
@@ -97,29 +97,49 @@ Open VS Code Settings (`Ctrl+,`) and search for "Code Guardian":
 }
 ```
 
-## 🔐 Git Hook Protection
+## 🔐 Dual Protection System
 
-For **maximum security**, Code Guardian can create a Git pre-commit hook that blocks commits even from the terminal.
+Todo Paranoid uses **two independent protection mechanisms** for maximum security:
 
-### 🎛️ Activate Git Hook
+### 🛡️ **Git API Integration** (VS Code)
 
-**Method 1: Automatic Prompt**
+- Intercepts commits directly within VS Code
+- Works automatically when extension is active
+- Can be toggled on/off instantly
 
-- When you first install, you'll see a popup asking to create the Git hook
-- Click "Yes" to enable terminal protection
+### 🔒 **Git Hook Protection** (Terminal)
 
-**Method 2: Manual Activation**
+- Creates physical git hooks in `.git/hooks/pre-commit`
+- Blocks commits even from external terminals
+- Persists even if extension is disabled
 
-- Press `Ctrl+Shift+P` (Command Palette)
-- Type: `Code Guardian: Setup Git Hook`
-- Click to install the hook
+## 🎛️ Managing Protection
 
-**Method 3: From Settings**
+### ⚡ Quick Toggle (Git API Only)
 
-- Go to Code Guardian settings
-- Click "Setup Git Hook" button
+- Press `Ctrl+Shift+P` → `Todo Paranoid: Toggle Todo Paranoid ON/OFF`
+- Instantly enables/disables commit blocking within VS Code
+- Doesn't affect physical git hooks
 
-### 🔒 How Git Hooks Work
+### 🔧 Setup Git Hooks
+
+- Press `Ctrl+Shift+P` → `Todo Paranoid: Setup Git Hook Protection`
+- Creates physical git hook for terminal protection
+- Blocks commits from any git client
+
+### 🧹 Complete Removal
+
+- Press `Ctrl+Shift+P` → `Todo Paranoid: Remove ALL Protections (Git API + Hooks)`
+- Removes both VS Code integration AND physical git hooks
+- **Use this when switching between projects with different accounts**
+
+### 🔍 Diagnostic Tools
+
+- Press `Ctrl+Shift+P` → `Todo Paranoid: Analyze Git Hooks`
+- Shows detailed report of all git hooks in your repositories
+- Helps identify protection status
+
+## 🔒 How Protection Works
 
 ```bash
 # ✅ This will work (saving and testing)
@@ -129,7 +149,7 @@ git add .
 git commit -m "my changes"
 
 # Console output:
-# 🚫 Code Guardian: Cannot commit! BLOCKING comments found:
+# 🚫 Todo Paranoid: Cannot commit! BLOCKING comments found:
 # 📁 auth.js (Line 15): PARANOID
 # 💡 Remove these comments before committing!
 ```
@@ -139,18 +159,48 @@ git commit -m "my changes"
 - **✅ Completely local** - only affects YOUR machine
 - **✅ Not shared** - doesn't modify the shared repository
 - **✅ Optional** - team members can choose to use it or not
-- **✅ Removable** - can be disabled anytime
+- **✅ Removable** - can be disabled anytime with "Remove ALL Protections"
 
-## 🎮 Commands
+## 🎮 Commands Reference
 
 Open Command Palette (`Ctrl+Shift+P`) and use these commands:
 
-| Command                           | Description                            |
-| --------------------------------- | -------------------------------------- |
-| `Code Guardian: Scan Workspace`   | Manually refresh the comments panel    |
-| `Code Guardian: Toggle Extension` | Enable/disable Code Guardian           |
-| `Code Guardian: Setup Git Hook`   | Install Git pre-commit hook protection |
-| `Code Guardian: Remove Git Hook`  | Uninstall Git hook protection          |
+| Command                                                   | Description                                         |
+| --------------------------------------------------------- | --------------------------------------------------- |
+| `Todo Paranoid: Scan Workspace for Comments`              | Manually refresh the comments panel                 |
+| `Todo Paranoid: Toggle Todo Paranoid ON/OFF`              | Enable/disable Git API integration                  |
+| `Todo Paranoid: Setup Git Hook Protection`                | Install Git pre-commit hook for terminal protection |
+| `Todo Paranoid: Remove ALL Protections (Git API + Hooks)` | **Complete removal** - disables everything          |
+| `Todo Paranoid: Analyze Git Hooks`                        | **New!** Diagnostic tool to analyze git hook status |
+
+## 🚨 Multi-Account Git Workflow
+
+**Working with different Git accounts?** Todo Paranoid's dual protection can interfere when switching between projects. Here's the workflow:
+
+### 🔄 **When Switching Projects/Accounts:**
+
+1. **Before switching accounts:**
+
+   ```
+   Ctrl+Shift+P → "Todo Paranoid: Remove ALL Protections"
+   ```
+
+2. **Switch to new account/project**
+
+3. **If you want protection in new project:**
+   ```
+   Ctrl+Shift+P → "Todo Paranoid: Setup Git Hook Protection"
+   ```
+
+### 🧹 **Emergency Cleanup (if commits are blocked unexpectedly):**
+
+```bash
+# Remove git hooks manually
+rm .git/hooks/pre-commit
+
+# Or clean all repositories at once
+find . -name ".git" -type d -exec rm -f {}/hooks/pre-commit \;
+```
 
 ## 🤝 Perfect for Teams
 
@@ -159,15 +209,15 @@ Open Command Palette (`Ctrl+Shift+P`) and use these commands:
 ```json
 // Add to .vscode/settings.json (shared)
 {
-  "codeGuardian.blockingWords": ["PARANOID", "NOCOMMIT", "DELETEME"],
-  "codeGuardian.trackingWords": ["TODO", "FIXME", "BUG", "REVIEW"]
+  "todoParanoid.blockingWords": ["PARANOID", "NOCOMMIT", "DELETEME"],
+  "todoParanoid.trackingWords": ["TODO", "FIXME", "BUG", "REVIEW"]
 }
 ```
 
 Each team member can:
 
 - ✅ **See the same comment categories** (from shared settings)
-- ✅ **Choose their own Git hook level** (personal preference)
+- ✅ **Choose their own protection level** (personal preference)
 - ✅ **Customize additional words** (personal productivity)
 
 ## 📊 Use Cases
@@ -231,22 +281,52 @@ const API_URL =
 ### Panel Not Showing Comments?
 
 1. Check if your file extension is supported (see settings)
-2. Press `Ctrl+Shift+P` → `Code Guardian: Scan Workspace`
-3. Verify `codeGuardian.enabled` is `true` in settings
+2. Press `Ctrl+Shift+P` → `Todo Paranoid: Scan Workspace for Comments`
+3. Verify `todoParanoid.enabled` is `true` in settings
 
-### Git Hook Not Working?
+### Git Hook Still Blocking After Extension Removal?
 
-1. Press `Ctrl+Shift+P` → `Code Guardian: Setup Git Hook`
-2. Check if `.git/hooks/pre-commit` file exists in your project
-3. Verify the file has execute permissions (`chmod +x .git/hooks/pre-commit`)
+**This is the most common issue!** Git hooks are physical files that persist even after uninstalling the extension.
+
+**Quick Fix:**
+
+```bash
+rm .git/hooks/pre-commit
+```
+
+**Complete Fix:**
+
+1. Press `Ctrl+Shift+P` → `Todo Paranoid: Remove ALL Protections`
+2. Or manually: `find . -name ".git" -type d -exec rm -f {}/hooks/pre-commit \;`
 
 ### Comments Not Highlighted?
 
 1. Make sure you're using the correct comment format: `//` or `#`
-2. Check `codeGuardian.showNotifications` is enabled
+2. Check `todoParanoid.showNotifications` is enabled
 3. Try switching to a different file and back
 
+### Extension Seems Disabled But Still Blocking?
+
+This means git hooks are still active:
+
+1. Press `Ctrl+Shift+P` → `Todo Paranoid: Analyze Git Hooks`
+2. Use `Todo Paranoid: Remove ALL Protections` to clean everything
+
 ## 📝 Changelog
+
+### v1.0.5
+
+- 🆕 **Advanced protection management** - New "Remove ALL Protections" command
+- 🔍 **Diagnostic tools** - "Analyze Git Hooks" command for troubleshooting
+- 🧹 **Better cleanup** - Handles git hooks that persist after extension removal
+- 🔄 **Multi-account support** - Easier workflow for developers with multiple git accounts
+- 📋 **Improved documentation** - Clear instructions for dual protection system
+
+### v1.0.4
+
+- 🛠️ **Dual protection system** - Git API integration + physical git hooks
+- ⚡ **Performance improvements** - Faster scanning and real-time updates
+- 🎨 **Enhanced visual indicators** - Better highlighting for different comment types
 
 ### v1.0.0
 
@@ -257,9 +337,9 @@ const API_URL =
 - 🔐 Optional Git hook protection
 - ⚙️ Fully configurable word lists
 
-## ❤️ Support Code Guardian
+## ❤️ Support Todo Paranoid
 
-If Code Guardian has saved you from embarrassing commits, consider supporting its development:
+If Todo Paranoid has saved you from embarrassing commits, consider supporting its development:
 
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/tu-usuario?style=for-the-badge&logo=github)](https://github.com/sponsors/tu-usuario)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/renzoludena)
@@ -269,7 +349,7 @@ If Code Guardian has saved you from embarrassing commits, consider supporting it
 
 Found a bug or have a feature request?
 
-[![GitHub Issues](https://img.shields.io/github/issues/tu-usuario/code-guardian?style=for-the-badge)](https://github.com/tu-usuario/code-guardian/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/tu-usuario/todo-paranoid?style=for-the-badge)](https://github.com/tu-usuario/todo-paranoid/issues)
 
 ## 📄 License
 

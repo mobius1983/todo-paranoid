@@ -8,9 +8,13 @@ interface CommentInfo {
   line: number;
   text: string;
   word: string;
-  isBlocking: boolean; // Nueva propiedad para distinguir tipos
+  isBlocking: boolean;
   category: 'blocking' | 'tracking';
 }
+
+// Variables globales para manejar la integración Git
+let gitApiActive = false;
+let originalCommitMethods: Map<any, any> = new Map();
 
 async function checkFilesForForbiddenComments(
   resources: any[]
@@ -24,7 +28,6 @@ async function checkFilesForForbiddenComments(
     if (fs.existsSync(filePath)) {
       const document = await vscode.workspace.openTextDocument(filePath);
       const comments = scanDocument(document);
-      // Solo retornar comentarios que BLOQUEAN operaciones
       results.push(...comments.filter((c) => c.isBlocking));
     }
   }
@@ -34,7 +37,11 @@ async function checkFilesForForbiddenComments(
 
 async function setupGitIntegration(): Promise<void> {
   try {
-    // Esperar a que Git esté disponible
+    if (gitApiActive) {
+      console.log('🛡️ Todo Paranoid: Git API integration already active');
+      return;
+    }
+
     const gitExtension = vscode.extensions.getExtension('vscode.git');
 
     if (!gitExtension) {
@@ -57,48 +64,87 @@ async function setupGitIntegration(): Promise<void> {
       return;
     }
 
-    console.log('🛡️ Todo Paranoid: Git integration successful!');
+    console.log('🛡️ Todo Paranoid: Setting up Git API integration...');
 
-    // Interceptar COMMITS (aquí sí bloqueamos)
+    // Interceptar COMMITS en todos los repositorios
     git.repositories.forEach((repo: any) => {
-      const originalCommit = repo.commit;
-      repo.commit = async function (message: string, opts?: any) {
-        const config = vscode.workspace.getConfiguration('todoParanoid');
-        if (
-          !config.get('enabled', true) ||
-          !config.get('blockGitOperations', true)
-        ) {
-          return originalCommit.call(this, message, opts);
-        }
+      // Guardar el método original
+      if (!originalCommitMethods.has(repo)) {
+        originalCommitMethods.set(repo, repo.commit);
 
-        // Verificar archivos STAGED antes del commit
-        const stagedFiles =
-          repo.state.indexChanges?.map((change: any) => change.uri.fsPath) ||
-          [];
-        const blockingComments = await checkFilesForForbiddenComments(
-          stagedFiles
-        );
+        repo.commit = async function (message: string, opts?: any) {
+          const config = vscode.workspace.getConfiguration('todoParanoid');
+          if (
+            !config.get('enabled', true) ||
+            !config.get('blockGitOperations', true) ||
+            !gitApiActive
+          ) {
+            return originalCommitMethods.get(repo).call(this, message, opts);
+          }
 
-        if (blockingComments.length > 0) {
-          const errorMessage = `🚫 Cannot commit! Found BLOCKING comments:\n${blockingComments
-            .map(
-              (f) => `📁 ${path.basename(f.file)} (Line ${f.line}): ${f.word}`
-            )
-            .join('\n')}\n\n💡 Remove these comments before committing!`;
-          vscode.window.showErrorMessage(errorMessage);
-          throw new Error('Blocking comments found - cannot commit');
-        }
+          // Verificar archivos STAGED antes del commit
+          const stagedFiles =
+            repo.state.indexChanges?.map((change: any) => change.uri.fsPath) ||
+            [];
+          const blockingComments = await checkFilesForForbiddenComments(
+            stagedFiles
+          );
 
-        return originalCommit.call(this, message, opts);
-      };
+          if (blockingComments.length > 0) {
+            const errorMessage = `🚫 Cannot commit! Found BLOCKING comments:\n${blockingComments
+              .map(
+                (f) => `📁 ${path.basename(f.file)} (Line ${f.line}): ${f.word}`
+              )
+              .join('\n')}\n\n💡 Remove these comments before committing!`;
+            vscode.window.showErrorMessage(errorMessage);
+            throw new Error('Blocking comments found - cannot commit');
+          }
+
+          return originalCommitMethods.get(repo).call(this, message, opts);
+        };
+      }
     });
+
+    gitApiActive = true;
+    console.log(
+      '🛡️ Todo Paranoid: Git API integration activated successfully!'
+    );
 
     // Setup Git hooks como respaldo
     setupGitHooks();
   } catch (error) {
     console.error('🛡️ Todo Paranoid: Git integration failed:', error);
-    // Fallback a solo Git hooks
     setupGitHooks();
+  }
+}
+
+// Nueva función para desactivar Git API Integration
+function disableGitIntegration(): void {
+  if (!gitApiActive) {
+    console.log('🛡️ Todo Paranoid: Git API integration already disabled');
+    return;
+  }
+
+  try {
+    const gitExtension = vscode.extensions.getExtension('vscode.git');
+    if (gitExtension && gitExtension.isActive) {
+      const git = gitExtension.exports?.getAPI(1);
+      if (git) {
+        // Restaurar métodos originales
+        git.repositories.forEach((repo: any) => {
+          const originalMethod = originalCommitMethods.get(repo);
+          if (originalMethod) {
+            repo.commit = originalMethod;
+            originalCommitMethods.delete(repo);
+          }
+        });
+      }
+    }
+
+    gitApiActive = false;
+    console.log('🛡️ Todo Paranoid: Git API integration disabled successfully!');
+  } catch (error) {
+    console.error('🛡️ Todo Paranoid: Error disabling Git integration:', error);
   }
 }
 
@@ -112,7 +158,6 @@ function setupGitHooks(): void {
     const preCommitHook = path.join(hooksDir, 'pre-commit');
 
     if (fs.existsSync(gitDir) && !fs.existsSync(preCommitHook)) {
-      // Crear pre-commit hook automáticamente
       const hookContent = generatePreCommitHook();
 
       vscode.window
@@ -142,10 +187,8 @@ function generatePreCommitHook(): string {
 # Todo Paranoid pre-commit hook
 # Auto-generated by Todo Paranoid VS Code Extension
 
-# Only BLOCKING words prevent commits (git add is allowed)
 BLOCKING_WORDS="${blockingWords.join('|')}"
 
-# Check staged files for BLOCKING comments only
 if git diff --cached --name-only | xargs grep -l -E "(//|#).*($BLOCKING_WORDS)" 2>/dev/null; then
     echo ""
     echo "🚫 Todo Paranoid: Cannot commit! BLOCKING comments found:"
@@ -168,36 +211,21 @@ exit 0
 `;
 }
 
-interface ForbiddenComment {
-  file: string;
-  line: number;
-  text: string;
-  word: string;
-}
-
 export function activate(context: vscode.ExtensionContext) {
   console.log('🛡️ Todo Paranoid is now active!');
 
-  // Inicializar decoraciones
   initializeDecorations();
-
-  // Forzar que el contexto esté disponible
   vscode.commands.executeCommand('setContext', 'todoParanoid.enabled', true);
 
   const provider = new CodeGuardianProvider();
-
-  // Asignar a la variable global para que sea accesible en otras funciones
   globalProvider = provider;
 
-  // Registrar provider primero
   vscode.window.registerTreeDataProvider('todoParanoidView', provider);
 
   const treeView = vscode.window.createTreeView('todoParanoidView', {
     treeDataProvider: provider,
     showCollapseAll: true,
   });
-
-  console.log('🛡️ Tree view created:', treeView.visible);
 
   // Comando para escanear workspace
   const scanCommand = vscode.commands.registerCommand(
@@ -208,26 +236,27 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Comando para refresh (interno) - REMOVIDO
-  // const refreshCommand = vscode.commands.registerCommand('todoParanoid.refreshView', () => {
-  //     provider.refresh();
-  // });
-
-  // Comando para toggle
+  // Comando para toggle - MEJORADO para manejar Git API
   const toggleCommand = vscode.commands.registerCommand(
     'todoParanoid.toggleExtension',
     () => {
       const config = vscode.workspace.getConfiguration('todoParanoid');
       const currentState = config.get('enabled', true);
-      config.update(
-        'enabled',
-        !currentState,
-        vscode.ConfigurationTarget.Global
-      );
+      const newState = !currentState;
+
+      config.update('enabled', newState, vscode.ConfigurationTarget.Global);
+
+      // Controlar Git API Integration basado en el estado
+      if (newState) {
+        setupGitIntegration();
+      } else {
+        disableGitIntegration();
+      }
+
       vscode.window.showInformationMessage(
-        `Todo Paranoid ${!currentState ? 'enabled' : 'disabled'}`
+        `Todo Paranoid ${newState ? 'enabled' : 'disabled'}`
       );
-      provider.refresh(); // Refresh view after toggle
+      provider.refresh();
     }
   );
 
@@ -236,19 +265,19 @@ export function activate(context: vscode.ExtensionContext) {
     'todoParanoid.setupGitHook',
     () => {
       setupGitHooksManual();
-      vscode.window.showInformationMessage('Git Hook setup initiated!');
     }
   );
 
-  // Comando para remover Git Hook
+  // Comando MEJORADO para remover protecciones
   const removeGitHookCommand = vscode.commands.registerCommand(
     'todoParanoid.removeGitHook',
     () => {
-      removeGitHooks();
+      removeAllProtections();
     }
   );
 
-  function removeGitHooks(): void {
+  // Nueva función que elimina TODAS las protecciones
+  function removeAllProtections(): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
       vscode.window.showErrorMessage('No workspace folder found!');
@@ -257,22 +286,25 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.window
       .showWarningMessage(
-        'Are you sure you want to remove Todo Paranoid git hooks?',
-        'Yes, Remove',
+        'This will remove ALL Todo Paranoid protections (Git API + Hooks). Continue?',
+        'Yes, Remove All',
         'Cancel'
       )
       .then((selection) => {
-        if (selection !== 'Yes, Remove') return;
+        if (selection !== 'Yes, Remove All') return;
 
         let hooksRemoved = 0;
 
+        // 1. Desactivar Git API Integration
+        disableGitIntegration();
+
+        // 2. Remover Git Hooks físicos
         workspaceFolders.forEach((folder) => {
           const gitDir = path.join(folder.uri.fsPath, '.git');
           const preCommitHook = path.join(gitDir, 'hooks', 'pre-commit');
 
           if (fs.existsSync(preCommitHook)) {
             try {
-              // Verificar que sea nuestro hook leyendo el contenido
               const content = fs.readFileSync(preCommitHook, 'utf8');
               if (content.includes('Todo Paranoid pre-commit hook')) {
                 fs.unlinkSync(preCommitHook);
@@ -291,15 +323,20 @@ export function activate(context: vscode.ExtensionContext) {
           }
         });
 
+        // 3. Mostrar resultado
+        const messages = [];
+        messages.push('🔓 Git API integration disabled');
         if (hooksRemoved > 0) {
-          vscode.window.showInformationMessage(
+          messages.push(
             `🗑️ Git hooks removed from ${hooksRemoved} repository(ies)`
           );
         } else {
-          vscode.window.showInformationMessage(
-            'No Todo Paranoid git hooks found to remove'
-          );
+          messages.push('📝 No Todo Paranoid git hooks found to remove');
         }
+
+        vscode.window.showInformationMessage(
+          `✅ All protections removed!\n${messages.join('\n')}`
+        );
       });
   }
 
@@ -332,13 +369,9 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       try {
-        // Crear directorio hooks si no existe
         fs.mkdirSync(hooksDir, { recursive: true });
-
-        // Crear el hook
         const hookContent = generatePreCommitHook();
         fs.writeFileSync(preCommitHook, hookContent, { mode: 0o755 });
-
         hooksCreated++;
         console.log(`✅ Git hook created in ${folder.name}`);
       } catch (error) {
@@ -355,7 +388,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }
 
-  // Mostrar advertencia al guardar archivos con comentarios bloqueantes (pero permitir el guardado)
+  // Rest of the listeners remain the same...
   const saveListener = vscode.workspace.onWillSaveTextDocument((event) => {
     const config = vscode.workspace.getConfiguration('todoParanoid');
     if (!config.get('enabled', true)) {
@@ -367,7 +400,6 @@ export function activate(context: vscode.ExtensionContext) {
     const blockingComments = allComments.filter((c) => c.isBlocking);
 
     if (blockingComments.length > 0 && config.get('showNotifications', true)) {
-      // Solo mostrar advertencia, NO cancelar el guardado
       vscode.window
         .showWarningMessage(
           `File saved with ${blockingComments.length} BLOCKING comment(s). Remember: you won't be able to commit this!`,
@@ -381,10 +413,9 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // Interceptar comandos de Git usando la API de Git de VS Code (con manejo de errores)
+  // Activar Git integration al inicio
   setupGitIntegration();
 
-  // Escanear en tiempo real mientras escribes Y cuando guardas
   const changeListener = vscode.workspace.onDidChangeTextDocument((event) => {
     const config = vscode.workspace.getConfiguration('todoParanoid');
     if (!config.get('enabled', true)) return;
@@ -393,15 +424,12 @@ export function activate(context: vscode.ExtensionContext) {
     const allComments = scanDocument(document);
 
     if (allComments.length > 0 && config.get('showNotifications', true)) {
-      // Decorar líneas - diferentes colores para diferentes tipos
       highlightComments(document, allComments);
     }
 
-    // Actualizar panel en tiempo real (con throttle para evitar spam)
     throttledRefresh();
   });
 
-  // Listener para cuando se guarda un archivo
   const saveDocumentListener = vscode.workspace.onDidSaveTextDocument(
     (document) => {
       console.log('🛡️ File saved, refreshing panel...');
@@ -409,14 +437,12 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Listener para cuando se abre/cierra un archivo
   const openDocumentListener = vscode.workspace.onDidOpenTextDocument(
     (document) => {
       provider.refresh();
     }
   );
 
-  // Listener para cuando se crea/elimina un archivo
   const fileSystemWatcher = vscode.workspace.createFileSystemWatcher(
     '**/*.{js,ts,jsx,tsx,py,java,cpp,c,cs,php,rb,go}'
   );
@@ -436,7 +462,6 @@ export function activate(context: vscode.ExtensionContext) {
     provider.refresh();
   });
 
-  // Listener para cuando cambias de archivo activo
   const activeEditorListener = vscode.window.onDidChangeActiveTextEditor(
     (editor) => {
       if (editor) {
@@ -444,7 +469,6 @@ export function activate(context: vscode.ExtensionContext) {
         if (allComments.length > 0) {
           highlightComments(editor.document, allComments);
         }
-        // Actualizar panel cuando cambias de archivo
         provider.refresh();
       }
     }
@@ -453,6 +477,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     scanCommand,
     toggleCommand,
+    setupGitHookCommand,
+    removeGitHookCommand,
     saveListener,
     changeListener,
     saveDocumentListener,
@@ -462,10 +488,7 @@ export function activate(context: vscode.ExtensionContext) {
     treeView
   );
 
-  // Escaneo inicial
   provider.refresh();
-
-  // Log para debug
   console.log('🛡️ Todo Paranoid: All components registered successfully');
 }
 
@@ -489,7 +512,6 @@ function scanDocument(document: vscode.TextDocument): CommentInfo[] {
   const lines = text.split('\n');
 
   lines.forEach((line, index) => {
-    // Verificar palabras bloqueantes (críticas)
     blockingWords.forEach((word) => {
       const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
       if (commentRegex.test(line)) {
@@ -504,7 +526,6 @@ function scanDocument(document: vscode.TextDocument): CommentInfo[] {
       }
     });
 
-    // Verificar palabras de seguimiento (organizacionales)
     trackingWords.forEach((word) => {
       const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
       if (commentRegex.test(line)) {
@@ -523,29 +544,23 @@ function scanDocument(document: vscode.TextDocument): CommentInfo[] {
   return results;
 }
 
-// Mantener referencias globales a las decoraciones
 let blockingDecorationType: vscode.TextEditorDecorationType;
 let trackingDecorationType: vscode.TextEditorDecorationType;
-
-// Variable global para el provider
 let globalProvider: CodeGuardianProvider;
 
-// Throttle function para evitar demasiadas actualizaciones
 let refreshTimeout: NodeJS.Timeout | null = null;
 function throttledRefresh() {
   if (refreshTimeout) {
     clearTimeout(refreshTimeout);
   }
   refreshTimeout = setTimeout(() => {
-    // Usar el provider global
     if (globalProvider) {
       globalProvider.refresh();
     }
-  }, 1000); // Actualizar después de 1 segundo de inactividad
+  }, 1000);
 }
 
 function initializeDecorations() {
-  // Decoración para comentarios BLOQUEANTES (rojo)
   blockingDecorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'rgba(255, 0, 0, 0.3)',
     border: '2px solid red',
@@ -554,7 +569,6 @@ function initializeDecorations() {
     overviewRulerLane: vscode.OverviewRulerLane.Right,
   });
 
-  // Decoración para comentarios de SEGUIMIENTO (amarillo)
   trackingDecorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'rgba(255, 255, 0, 0.2)',
     border: '1px solid orange',
@@ -609,7 +623,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
   }
 
   getTreeItem(element: CommentInfo): vscode.TreeItem {
-    // Headers de categoría
     if (element.word === 'HEADER') {
       const item = new vscode.TreeItem(
         element.text,
@@ -625,7 +638,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
       return item;
     }
 
-    // Elementos normales de comentarios
     const item = new vscode.TreeItem(
       `${path.basename(element.file)} (Line ${element.line})`,
       vscode.TreeItemCollapsibleState.None
@@ -634,7 +646,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
     item.description = element.text;
     item.tooltip = `${element.file}:${element.line}\n${element.text}\nWord: ${element.word}\nType: ${element.category}`;
 
-    // Diferentes iconos según el tipo
     if (element.isBlocking) {
       item.iconPath = new vscode.ThemeIcon(
         'circle-filled',
@@ -665,20 +676,16 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
 
   getChildren(element?: CommentInfo): Thenable<CommentInfo[]> {
     if (!element) {
-      // Organizar por categorías y luego por archivos
       const blocking = this.allComments.filter((c) => c.isBlocking);
       const tracking = this.allComments.filter((c) => !c.isBlocking);
 
-      // Mostrar estadísticas en la parte superior si hay comentarios
       if (blocking.length === 0 && tracking.length === 0) {
         return Promise.resolve([]);
       }
 
-      // Crear elementos de categoría visual
       const result: CommentInfo[] = [];
 
       if (blocking.length > 0) {
-        // Agregar header visual para comentarios bloqueantes
         result.push({
           file: '',
           line: 0,
@@ -691,7 +698,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
       }
 
       if (tracking.length > 0) {
-        // Agregar header visual para comentarios de seguimiento
         result.push({
           file: '',
           line: 0,
@@ -782,7 +788,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
       const lines = content.split('\n');
 
       lines.forEach((line, index) => {
-        // Buscar palabras bloqueantes
         blockingWords.forEach((word) => {
           const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
           if (commentRegex.test(line)) {
@@ -797,7 +802,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
           }
         });
 
-        // Buscar palabras de seguimiento
         trackingWords.forEach((word) => {
           const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
           if (commentRegex.test(line)) {
@@ -819,13 +823,14 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
 }
 
 export function deactivate() {
-  // Limpiar timeout si existe
+  // Desactivar Git API integration al cerrar
+  disableGitIntegration();
+
   if (refreshTimeout) {
     clearTimeout(refreshTimeout);
     refreshTimeout = null;
   }
 
-  // Limpiar decoraciones
   if (blockingDecorationType) {
     blockingDecorationType.dispose();
   }
