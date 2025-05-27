@@ -1,8 +1,8 @@
 {
   "name": "todo-paranoid",
-  "displayName": "Code Guardian - Block Forbidden Comments",
-  "description": "Prevents committing code with forbidden comments like //Paranoid, //NOCOMMIT, etc.",
-  "version": "1.0.0",
+  "displayName": "Todo Paranoid - Block Forbidden Comments",
+  "description": "Prevents committing code with forbidden comments like //PARANOID //NOCOMMIT, etc.",
+  "version": "1.0.4",
   "publisher": "tu-nombre",
   "engines": {
     "vscode": "^1.74.0"
@@ -28,36 +28,36 @@
       {
         "command": "todoParanoid.scanWorkspace",
         "title": "Scan Workspace for Comments",
-        "category": "Code Guardian"
+        "category": "Todo Paranoid"
       },
       {
         "command": "todoParanoid.toggleExtension",
-        "title": "Toggle Code Guardian",
-        "category": "Code Guardian"
+        "title": "Toggle Todo Paranoid",
+        "category": "Todo Paranoid"
       },
       {
         "command": "todoParanoid.setupGitHook",
         "title": "Setup Git Hook Protection",
-        "category": "Code Guardian"
+        "category": "Todo Paranoid"
       },
       {
         "command": "todoParanoid.removeGitHook",
         "title": "Remove Git Hook Protection",
-        "category": "Code Guardian"
+        "category": "Todo Paranoid"
       }
     ],
     "configuration": {
-      "title": "Code Guardian",
+      "title": "Todo Paranoid",
       "properties": {
         "todoParanoid.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable Code Guardian"
+          "description": "Enable/disable Todo Paranoid"
         },
         "todoParanoid.blockingWords": {
           "type": "array",
           "default": [
-            "Paranoid",
+            "PARANOID",
             "NOCOMMIT"
           ],
           "description": "Words that BLOCK git commit operations (but allow file saving for testing)"
