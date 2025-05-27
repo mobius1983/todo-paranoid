@@ -492,7 +492,7 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('🛡️ Todo Paranoid: All components registered successfully');
 }
 
-function scanDocument(document: vscode.TextDocument): CommentInfo[] {
+function scanDocumentOld(document: vscode.TextDocument): CommentInfo[] {
   const config = vscode.workspace.getConfiguration('todoParanoid');
   const blockingWords = config.get<string[]>('blockingWords', ['PARANOID']);
   const trackingWords = config.get<string[]>('trackingWords', [
@@ -528,6 +528,63 @@ function scanDocument(document: vscode.TextDocument): CommentInfo[] {
 
     trackingWords.forEach((word) => {
       const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
+      if (commentRegex.test(line)) {
+        results.push({
+          file: document.fileName,
+          line: index + 1,
+          text: line.trim(),
+          word: word,
+          isBlocking: false,
+          category: 'tracking',
+        });
+      }
+    });
+  });
+
+  return results;
+}
+
+function scanDocument(document: vscode.TextDocument): CommentInfo[] {
+  const config = vscode.workspace.getConfiguration('todoParanoid');
+  const blockingWords = config.get<string[]>('blockingWords', ['PARANOID']);
+  const trackingWords = config.get<string[]>('trackingWords', [
+    'TODO',
+    'FIXME',
+    'BUG',
+  ]);
+  const fileExtensions = config.get<string[]>('fileExtensions', ['.js', '.ts']);
+
+  const fileExt = path.extname(document.fileName);
+  if (!fileExtensions.includes(fileExt)) {
+    return [];
+  }
+
+  const results: CommentInfo[] = [];
+  const text = document.getText();
+  const lines = text.split('\n');
+
+  lines.forEach((line, index) => {
+    // Verificar palabras bloqueantes (críticas)
+    blockingWords.forEach((word) => {
+      // Regex más estricta: requiere que la palabra esté inmediatamente después del comentario
+      // y seguida por un separador (espacio, :, etc.) o fin de línea
+      const commentRegex = new RegExp(`^\\s*(//|#)\\s*${word}\\b`, 'i');
+      if (commentRegex.test(line)) {
+        results.push({
+          file: document.fileName,
+          line: index + 1,
+          text: line.trim(),
+          word: word,
+          isBlocking: true,
+          category: 'blocking',
+        });
+      }
+    });
+
+    // Verificar palabras de seguimiento (organizacionales)
+    trackingWords.forEach((word) => {
+      // Misma regex estricta para palabras de tracking
+      const commentRegex = new RegExp(`^\\s*(//|#)\\s*${word}\\b`, 'i');
       if (commentRegex.test(line)) {
         results.push({
           file: document.fileName,
@@ -778,7 +835,7 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
     }
   }
 
-  private scanFile(
+  private scanFileOld(
     filePath: string,
     blockingWords: string[],
     trackingWords: string[]
@@ -804,6 +861,52 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
 
         trackingWords.forEach((word) => {
           const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
+          if (commentRegex.test(line)) {
+            this.allComments.push({
+              file: filePath,
+              line: index + 1,
+              text: line.trim(),
+              word: word,
+              isBlocking: false,
+              category: 'tracking',
+            });
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Error reading file:', filePath, error);
+    }
+  }
+
+  private scanFile(
+    filePath: string,
+    blockingWords: string[],
+    trackingWords: string[]
+  ): void {
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const lines = content.split('\n');
+
+      lines.forEach((line, index) => {
+        // Buscar palabras bloqueantes con regex estricta
+        blockingWords.forEach((word) => {
+          // Regex estricta: inicio de línea + espacios opcionales + comentario + espacios opcionales + palabra + boundary
+          const commentRegex = new RegExp(`^\\s*(//|#)\\s*${word}\\b`, 'i');
+          if (commentRegex.test(line)) {
+            this.allComments.push({
+              file: filePath,
+              line: index + 1,
+              text: line.trim(),
+              word: word,
+              isBlocking: true,
+              category: 'blocking',
+            });
+          }
+        });
+
+        // Buscar palabras de seguimiento con regex estricta
+        trackingWords.forEach((word) => {
+          const commentRegex = new RegExp(`^\\s*(//|#)\\s*${word}\\b`, 'i');
           if (commentRegex.test(line)) {
             this.allComments.push({
               file: filePath,
