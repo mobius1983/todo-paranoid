@@ -2,8 +2,8 @@
   "name": "todo-paranoid",
   "displayName": "Todo Paranoid - Block Forbidden Comments",
   "description": "Prevents committing code with forbidden comments like //PARANOID //NOCOMMIT, etc.",
-  "version": "1.0.7",
-  "publisher": "tu-nombre",
+  "version": "0.0.11",
+  "publisher": "mobius1983",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -111,7 +111,7 @@
         {
           "id": "todoParanoid",
           "title": "Todo Paranoid",
-          "icon": "$(shield)"
+          "icon": "./icons/sidebar-icon.svg"
         }
       ]
     },

@@ -1,0 +1,36 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  
+  <!-- Shield shape -->
+  <path d="M64 20 L90 35 L90 70 C90 85 77 95 64 100 C51 95 38 85 38 70 L38 35 Z" 
+        fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+  
+  <!-- Inner shield highlight -->
+  <path d="M64 25 L85 38 L85 68 C85 80 74 88 64 92 C54 88 43 80 43 68 L43 38 Z" 
+        fill="#ef4444" opacity="0.8"/>
+  
+  <!-- Eye symbol (paranoid watching) -->
+  <ellipse cx="64" cy="55" rx="18" ry="12" fill="#1f2937"/>
+  <ellipse cx="64" cy="55" rx="12" ry="8" fill="#ffffff"/>
+  <circle cx="64" cy="55" r="6" fill="#1f2937"/>
+  <circle cx="66" cy="53" r="2" fill="#ffffff" opacity="0.6"/>
+  
+  <!-- Code brackets around shield -->
+  <text x="25" y="70" font-family="monospace" font-size="20" font-weight="bold" fill="#64748b">&lt;/</text>
+  <text x="95" y="70" font-family="monospace" font-size="20" font-weight="bold" fill="#64748b">/&gt;</text>
+  
+  <!-- Warning indicators -->
+  <circle cx="45" cy="85" r="3" fill="#f59e0b"/>
+  <circle cx="83" cy="85" r="3" fill="#f59e0b"/>
+  
+  <!-- Subtle glow effect -->
+  <circle cx="64" cy="64" r="58" fill="none" stroke="url(#glow)" stroke-width="1" opacity="0.5"/>
+  
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+</svg>

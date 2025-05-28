@@ -35,13 +35,13 @@ Todo Paranoid tracks two types of comments in your code:
 
 ## 📸 Screenshots
 
-![Todo Paranoid Panel](https://raw.githubusercontent.com/tu-usuario/todo-paranoid/main/images/panel-screenshot.png)
+![Todo Paranoid Panel](https://raw.githubusercontent.com/mobius1983/todo-paranoid/main/images/panel-screenshot.png)
 _The sidebar panel shows all your comments organized by type_
 
-![Blocking Comment](https://raw.githubusercontent.com/tu-usuario/todo-paranoid/main/images/blocking-comment.png)
+![Blocking Comment](https://raw.githubusercontent.com/mobius1983/todo-paranoid/main/images/blocking-comment.png)
 _Blocking comments are highlighted in red and prevent commits_
 
-![Tracking Comments](https://raw.githubusercontent.com/tu-usuario/todo-paranoid/main/images/tracking-comments.png)
+![Tracking Comments](https://raw.githubusercontent.com/mobius1983/todo-paranoid/main/images/tracking-comments.png)
 _Tracking comments are highlighted in yellow for organization_
 
 ## ⚙️ Configuration
@@ -341,15 +341,15 @@ This means git hooks are still active:
 
 If Todo Paranoid has saved you from embarrassing commits, consider supporting its development:
 
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/tu-usuario?style=for-the-badge&logo=github)](https://github.com/sponsors/tu-usuario)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/mobius1983?style=for-the-badge&logo=github)](https://github.com/sponsors/mobius1983)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/renzoludena)
-[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/tu-usuario)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/rludena1983)
 
 ## 🐛 Issues & Feature Requests
 
 Found a bug or have a feature request?
 
-[![GitHub Issues](https://img.shields.io/github/issues/tu-usuario/todo-paranoid?style=for-the-badge)](https://github.com/mobius1983/todo-paranoid/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/mobius1983/todo-paranoid?style=for-the-badge)](https://github.com/mobius1983/todo-paranoid/issues)
 
 ## 📄 License
 
