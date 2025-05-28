@@ -1,12 +1,21 @@
-<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <!-- Simple shield outline -->
-  <path d="M8 2 L12 3.5 L12 8.5 C12 11 10 12.5 8 14 C6 12.5 4 11 4 8.5 L4 3.5 Z" 
-        fill="none" stroke="currentColor" stroke-width="1.2"/>
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield con más espacio y definición -->
+  <path d="M12 2 L20 4.5 L20 13 C20 17.5 16.5 20.5 12 21.5 C7.5 20.5 4 17.5 4 13 L4 4.5 Z" 
+        fill="none" 
+        stroke="currentColor" 
+        stroke-width="1.8" 
+        stroke-linejoin="round"
+        stroke-linecap="round"/>
   
-  <!-- Eye -->
-  <circle cx="8" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1"/>
-  <circle cx="8" cy="7" r="1" fill="currentColor"/>
+  <!-- Eye con más detalle -->
+  <ellipse cx="12" cy="10.5" rx="4" ry="2.8" 
+           fill="none" 
+           stroke="currentColor" 
+           stroke-width="1.2"/>
+  <circle cx="12" cy="10.5" r="2.2" fill="currentColor"/>
+  <circle cx="12.8" cy="9.8" r="0.8" fill="currentColor" opacity="0.3"/>
   
-  <!-- Alert dot -->
-  <circle cx="8" cy="11" r="1" fill="currentColor" opacity="0.7"/>
+  <!-- Alert dot más definido -->
+  <circle cx="12" cy="16.5" r="1.5" fill="currentColor" opacity="0.8"/>
+  <circle cx="12" cy="16.5" r="0.8" fill="currentColor"/>
 </svg>

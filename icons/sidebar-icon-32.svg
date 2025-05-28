@@ -1,0 +1,31 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield de alta definición -->
+  <path d="M16 3 L27 6 L27 17 C27 23 22 27 16 28.5 C10 27 5 23 5 17 L5 6 Z" 
+        fill="none" 
+        stroke="currentColor" 
+        stroke-width="2.2" 
+        stroke-linejoin="round"
+        stroke-linecap="round"/>
+  
+  <!-- Inner shield highlight -->
+  <path d="M16 5 L25 7.5 L25 16 C25 21 21.5 24 16 25.5 C10.5 24 7 21 7 16 L7 7.5 Z" 
+        fill="currentColor" 
+        opacity="0.1"/>
+  
+  <!-- Eye con detalles finos -->
+  <ellipse cx="16" cy="14" rx="6" ry="4" 
+           fill="currentColor" 
+           opacity="0.15"/>
+  <ellipse cx="16" cy="14" rx="5" ry="3.2" 
+           fill="none" 
+           stroke="currentColor" 
+           stroke-width="1.5"/>
+  <circle cx="16" cy="14" r="2.8" fill="currentColor"/>
+  <circle cx="17.2" cy="12.8" r="1.2" fill="currentColor" opacity="0.4"/>
+  <circle cx="17.5" cy="12.5" r="0.6" fill="currentColor" opacity="0.8"/>
+  
+  <!-- Alert dot con gradiente -->
+  <circle cx="16" cy="22" r="2.5" fill="currentColor" opacity="0.3"/>
+  <circle cx="16" cy="22" r="2" fill="currentColor" opacity="0.8"/>
+  <circle cx="16" cy="22" r="1.2" fill="currentColor"/>
+</svg>
