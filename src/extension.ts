@@ -416,17 +416,26 @@ export function activate(context: vscode.ExtensionContext) {
   // Activar Git integration al inicio
   setupGitIntegration();
 
+  // Listener mejorado para cambios de texto
   const changeListener = vscode.workspace.onDidChangeTextDocument((event) => {
     const config = vscode.workspace.getConfiguration('todoParanoid');
     if (!config.get('enabled', true)) return;
 
     const document = event.document;
+
+    // Escanear el documento actualizado
     const allComments = scanDocument(document);
 
+    // SIEMPRE actualizar las decoraciones (incluso si no hay comentarios)
+    // Esto asegura que se limpien las decoraciones obsoletas
+    highlightComments(document, allComments);
+
+    // Mostrar notificaciones solo si hay comentarios Y las notificaciones están habilitadas
     if (allComments.length > 0 && config.get('showNotifications', true)) {
-      highlightComments(document, allComments);
+      // Las decoraciones ya se aplicaron arriba
     }
 
+    // Actualizar panel con throttle
     throttledRefresh();
   });
 
@@ -462,15 +471,47 @@ export function activate(context: vscode.ExtensionContext) {
     provider.refresh();
   });
 
+  // Listener mejorado para cuando cambias de archivo
   const activeEditorListener = vscode.window.onDidChangeActiveTextEditor(
     (editor) => {
       if (editor) {
+        // Limpiar decoraciones del editor anterior
+        clearAllDecorations();
+
+        // Aplicar decoraciones al nuevo archivo
         const allComments = scanDocument(editor.document);
         if (allComments.length > 0) {
           highlightComments(editor.document, allComments);
         }
-        provider.refresh();
+
+        // Actualizar panel
+        if (globalProvider) {
+          globalProvider.refresh();
+        }
       }
+    }
+  );
+
+  // Función adicional para forzar limpieza (puedes agregar esto como comando)
+  function forceCleanDecorations() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) return;
+
+    // Limpiar todas las decoraciones
+    clearAllDecorations();
+
+    // Re-escanear y aplicar decoraciones actuales
+    const allComments = scanDocument(editor.document);
+    highlightComments(editor.document, allComments);
+
+    vscode.window.showInformationMessage('🧹 Decorations refreshed!');
+  }
+
+  // OPCIONAL: Agregar comando para limpiar decoraciones manualmente
+  const cleanDecorationsCommand = vscode.commands.registerCommand(
+    'todoParanoid.cleanDecorations',
+    () => {
+      forceCleanDecorations();
     }
   );
 
@@ -646,22 +687,48 @@ function highlightComments(
     initializeDecorations();
   }
 
-  const blockingRanges = comments
-    .filter((c) => c.isBlocking)
-    .map((comment) => {
-      const line = document.lineAt(comment.line - 1);
-      return new vscode.Range(line.range.start, line.range.end);
-    });
+  // Separar comentarios por tipo
+  const blockingComments = comments.filter((c) => c.isBlocking);
+  const trackingComments = comments.filter((c) => !c.isBlocking);
 
-  const trackingRanges = comments
-    .filter((c) => !c.isBlocking)
-    .map((comment) => {
-      const line = document.lineAt(comment.line - 1);
-      return new vscode.Range(line.range.start, line.range.end);
-    });
+  // Crear ranges para comentarios bloqueantes
+  const blockingRanges = blockingComments.map((comment) => {
+    const line = document.lineAt(comment.line - 1);
+    return new vscode.Range(line.range.start, line.range.end);
+  });
 
+  // Crear ranges para comentarios de seguimiento
+  const trackingRanges = trackingComments.map((comment) => {
+    const line = document.lineAt(comment.line - 1);
+    return new vscode.Range(line.range.start, line.range.end);
+  });
+
+  // CLAVE: Aplicar decoraciones incluso si los arrays están vacíos
+  // Esto limpia las decoraciones anteriores cuando no hay comentarios
   editor.setDecorations(blockingDecorationType, blockingRanges);
   editor.setDecorations(trackingDecorationType, trackingRanges);
+
+  console.log(
+    `🎨 Decorations updated: ${blockingRanges.length} blocking, ${trackingRanges.length} tracking`
+  );
+}
+
+// Función mejorada para limpiar decoraciones específicamente
+function clearAllDecorations(document?: vscode.TextDocument) {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  // Si se especifica un documento, solo limpiar ese documento
+  if (document && editor.document !== document) return;
+
+  if (blockingDecorationType) {
+    editor.setDecorations(blockingDecorationType, []);
+  }
+  if (trackingDecorationType) {
+    editor.setDecorations(trackingDecorationType, []);
+  }
+
+  console.log('🧹 All decorations cleared');
 }
 
 class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
@@ -925,21 +992,31 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
   }
 }
 
+// Mejorar la función deactivate() para limpiar decoraciones al cerrar
 export function deactivate() {
-  // Desactivar Git API integration al cerrar
+  console.log('🔄 Deactivating Todo Paranoid...');
+
+  // Limpiar decoraciones antes de desactivar
+  clearAllDecorations();
+
+  // Forzar desactivación de Git API
   disableGitIntegration();
 
+  // Limpiar timeout
   if (refreshTimeout) {
     clearTimeout(refreshTimeout);
     refreshTimeout = null;
   }
 
+  // Limpiar y disponer decoraciones
   if (blockingDecorationType) {
     blockingDecorationType.dispose();
+    blockingDecorationType = null;
   }
   if (trackingDecorationType) {
     trackingDecorationType.dispose();
+    trackingDecorationType = null;
   }
 
-  console.log('🛡️ Todo Paranoid deactivated');
+  console.log('🛡️ Todo Paranoid deactivated completely');
 }
