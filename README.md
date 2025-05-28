@@ -349,11 +349,11 @@ If Todo Paranoid has saved you from embarrassing commits, consider supporting it
 
 Found a bug or have a feature request?
 
-[![GitHub Issues](https://img.shields.io/github/issues/tu-usuario/todo-paranoid?style=for-the-badge)](https://github.com/tu-usuario/todo-paranoid/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/tu-usuario/todo-paranoid?style=for-the-badge)](https://github.com/mobius1983/todo-paranoid/issues)
 
 ## 📄 License
 
-MIT © [Tu Nombre](https://github.com/tu-usuario)
+MIT © [Mobius1983](https://github.com/mobius1983)
 
 ---
 
