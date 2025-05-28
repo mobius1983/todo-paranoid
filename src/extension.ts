@@ -642,9 +642,9 @@ function scanDocument(document: vscode.TextDocument): CommentInfo[] {
   return results;
 }
 
-let blockingDecorationType: vscode.TextEditorDecorationType;
-let trackingDecorationType: vscode.TextEditorDecorationType;
-let globalProvider: CodeGuardianProvider;
+let blockingDecorationType: vscode.TextEditorDecorationType | null = null;
+let trackingDecorationType: vscode.TextEditorDecorationType | null = null;
+let globalProvider: CodeGuardianProvider | null = null;
 
 let refreshTimeout: NodeJS.Timeout | null = null;
 function throttledRefresh() {
@@ -659,6 +659,13 @@ function throttledRefresh() {
 }
 
 function initializeDecorations() {
+  // Limpiar decoraciones anteriores si existen
+  if (blockingDecorationType) {
+    blockingDecorationType.dispose();
+  }
+  if (trackingDecorationType) {
+    trackingDecorationType.dispose();
+  }
   blockingDecorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'rgba(255, 0, 0, 0.3)',
     border: '2px solid red',
@@ -683,28 +690,32 @@ function highlightComments(
   const editor = vscode.window.activeTextEditor;
   if (!editor || editor.document !== document) return;
 
+  // Verificar que las decoraciones existen, si no, crearlas
   if (!blockingDecorationType || !trackingDecorationType) {
     initializeDecorations();
   }
 
-  // Separar comentarios por tipo
-  const blockingComments = comments.filter((c) => c.isBlocking);
-  const trackingComments = comments.filter((c) => !c.isBlocking);
+  // Verificación adicional de seguridad
+  if (!blockingDecorationType || !trackingDecorationType) {
+    console.error('❌ Failed to create decoration types');
+    return;
+  }
 
-  // Crear ranges para comentarios bloqueantes
-  const blockingRanges = blockingComments.map((comment) => {
-    const line = document.lineAt(comment.line - 1);
-    return new vscode.Range(line.range.start, line.range.end);
-  });
+  const blockingRanges = comments
+    .filter((c) => c.isBlocking)
+    .map((comment) => {
+      const line = document.lineAt(comment.line - 1);
+      return new vscode.Range(line.range.start, line.range.end);
+    });
 
-  // Crear ranges para comentarios de seguimiento
-  const trackingRanges = trackingComments.map((comment) => {
-    const line = document.lineAt(comment.line - 1);
-    return new vscode.Range(line.range.start, line.range.end);
-  });
+  const trackingRanges = comments
+    .filter((c) => !c.isBlocking)
+    .map((comment) => {
+      const line = document.lineAt(comment.line - 1);
+      return new vscode.Range(line.range.start, line.range.end);
+    });
 
-  // CLAVE: Aplicar decoraciones incluso si los arrays están vacíos
-  // Esto limpia las decoraciones anteriores cuando no hay comentarios
+  // Aplicar decoraciones (esto limpia las anteriores automáticamente)
   editor.setDecorations(blockingDecorationType, blockingRanges);
   editor.setDecorations(trackingDecorationType, trackingRanges);
 
@@ -713,12 +724,11 @@ function highlightComments(
   );
 }
 
-// Función mejorada para limpiar decoraciones específicamente
+// Función clearAllDecorations actualizada
 function clearAllDecorations(document?: vscode.TextDocument) {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return;
 
-  // Si se especifica un documento, solo limpiar ese documento
   if (document && editor.document !== document) return;
 
   if (blockingDecorationType) {
@@ -992,7 +1002,7 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
   }
 }
 
-// Mejorar la función deactivate() para limpiar decoraciones al cerrar
+// Función deactivate actualizada
 export function deactivate() {
   console.log('🔄 Deactivating Todo Paranoid...');
 
@@ -1008,14 +1018,19 @@ export function deactivate() {
     refreshTimeout = null;
   }
 
-  // Limpiar y disponer decoraciones
+  // Limpiar y disponer decoraciones de forma segura
   if (blockingDecorationType) {
     blockingDecorationType.dispose();
-    blockingDecorationType = null;
+    blockingDecorationType = null; // ✅ Ahora esto funciona
   }
   if (trackingDecorationType) {
     trackingDecorationType.dispose();
-    trackingDecorationType = null;
+    trackingDecorationType = null; // ✅ Ahora esto funciona
+  }
+
+  // Limpiar provider global
+  if (globalProvider) {
+    globalProvider = null;
   }
 
   console.log('🛡️ Todo Paranoid deactivated completely');
