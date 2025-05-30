@@ -1,8 +1,8 @@
 # 🛡️ Todo Paranoid - Block Forbidden Comments
 
-[![Version](https://img.shields.io/vscode-marketplace/v/tu-nombre.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.todo-paranoid)
-[![Downloads](https://img.shields.io/vscode-marketplace/d/tu-nombre.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.todo-paranoid)
-[![Rating](https://img.shields.io/vscode-marketplace/r/tu-nombre.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=tu-nombre.todo-paranoid)
+[![Version](https://img.shields.io/vscode-marketplace/v/mobius1983.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
+[![Downloads](https://img.shields.io/vscode-marketplace/d/mobius1983.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
+[![Rating](https://img.shields.io/vscode-marketplace/r/mobius1983.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
 
 > **Never commit embarrassing comments again!** Todo Paranoid prevents you from accidentally committing sensitive comments like `//PARANOID: use fake password` while still allowing you to test your code locally.
 
@@ -139,6 +139,73 @@ Todo Paranoid uses **two independent protection mechanisms** for maximum securit
 - Shows detailed report of all git hooks in your repositories
 - Helps identify protection status
 
+## 🗑️ IMPORTANT: Uninstalling Todo Paranoid
+
+> **⚠️ CRITICAL NOTICE**: Git hooks created by Todo Paranoid will **persist after uninstalling** the extension. This is intentional for security, but you need to clean them up manually.
+
+### 🔴 **BEFORE Uninstalling (Recommended Method)**
+
+1. **Open Command Palette**: `Ctrl+Shift+P`
+2. **Run cleanup command**: `Todo Paranoid: Remove ALL Protections (Git API + Hooks)`
+3. **Confirm removal** when prompted
+4. **Now you can safely uninstall** the extension from Extensions panel
+
+### 🟡 **AFTER Uninstalling (If You Forgot to Clean Up)**
+
+If you already uninstalled and git commits are still being blocked:
+
+#### **Single Repository Cleanup:**
+
+```bash
+# Check if the hook exists
+ls -la .git/hooks/pre-commit
+
+# Remove the Todo Paranoid hook
+rm .git/hooks/pre-commit
+
+# Verify it's gone
+ls -la .git/hooks/pre-commit
+```
+
+#### **Multiple Repositories Cleanup:**
+
+```bash
+# Find and remove all Todo Paranoid hooks in current directory and subdirectories
+find . -name ".git" -type d -exec sh -c 'if [ -f "$1/hooks/pre-commit" ]; then echo "Removing hook from: $1"; rm "$1/hooks/pre-commit"; fi' _ {} \;
+```
+
+#### **Windows Users:**
+
+```powershell
+# PowerShell command to remove hooks
+Get-ChildItem -Path . -Recurse -Directory -Name ".git" | ForEach-Object {
+    $hookPath = Join-Path $_ "hooks\pre-commit"
+    if (Test-Path $hookPath) {
+        Write-Host "Removing hook from: $_"
+        Remove-Item $hookPath
+    }
+}
+```
+
+### 🚨 **Why Don't Hooks Auto-Remove?**
+
+- **Security Feature**: Prevents accidental removal of commit protections
+- **Team Safety**: Ensures hooks persist even if someone accidentally disables the extension
+- **Cross-Platform**: Works independently of VS Code and the extension
+
+### ✅ **Verification After Cleanup**
+
+Test that hooks are completely removed:
+
+```bash
+# This should work without any blocking
+echo "test" > test.txt
+git add test.txt
+git commit -m "test commit"
+git reset --soft HEAD~1  # Undo the test commit
+rm test.txt              # Clean up test file
+```
+
 ## 🔒 How Protection Works
 
 ```bash
@@ -171,7 +238,6 @@ Open Command Palette (`Ctrl+Shift+P`) and use these commands:
 | `Todo Paranoid: Toggle Todo Paranoid ON/OFF`              | Enable/disable Git API integration                  |
 | `Todo Paranoid: Setup Git Hook Protection`                | Install Git pre-commit hook for terminal protection |
 | `Todo Paranoid: Remove ALL Protections (Git API + Hooks)` | **Complete removal** - disables everything          |
-| `Todo Paranoid: Analyze Git Hooks`                        | **New!** Diagnostic tool to analyze git hook status |
 
 ## 🚨 Multi-Account Git Workflow
 
@@ -284,20 +350,32 @@ const API_URL =
 2. Press `Ctrl+Shift+P` → `Todo Paranoid: Scan Workspace for Comments`
 3. Verify `todoParanoid.enabled` is `true` in settings
 
-### Git Hook Still Blocking After Extension Removal?
+### 🔴 **Git Hook Still Blocking After Extension Removal?**
 
 **This is the most common issue!** Git hooks are physical files that persist even after uninstalling the extension.
 
-**Quick Fix:**
+**⚡ Quick Fix:**
 
 ```bash
 rm .git/hooks/pre-commit
 ```
 
-**Complete Fix:**
+**🧹 Complete Fix (Multiple Repositories):**
 
-1. Press `Ctrl+Shift+P` → `Todo Paranoid: Remove ALL Protections`
-2. Or manually: `find . -name ".git" -type d -exec rm -f {}/hooks/pre-commit \;`
+```bash
+# Find and remove all Todo Paranoid hooks
+find . -name ".git" -type d -exec rm -f {}/hooks/pre-commit \;
+```
+
+**🔍 Check What's Blocking You:**
+
+```bash
+# View the hook content to confirm it's from Todo Paranoid
+cat .git/hooks/pre-commit
+
+# Look for this line at the top:
+# "# Todo Paranoid pre-commit hook"
+```
 
 ### Comments Not Highlighted?
 
@@ -307,10 +385,14 @@ rm .git/hooks/pre-commit
 
 ### Extension Seems Disabled But Still Blocking?
 
-This means git hooks are still active:
+This means git hooks are still active. **Solution:**
 
-1. Press `Ctrl+Shift+P` → `Todo Paranoid: Analyze Git Hooks`
-2. Use `Todo Paranoid: Remove ALL Protections` to clean everything
+1. Check if hooks exist: `ls -la .git/hooks/pre-commit`
+2. Remove them: `rm .git/hooks/pre-commit`
+3. Or use the extension's cleanup command (if still installed):
+   ```
+   Ctrl+Shift+P → "Todo Paranoid: Remove ALL Protections"
+   ```
 
 ## 📝 Changelog
 

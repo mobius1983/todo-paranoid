@@ -1,0 +1,82 @@
+MIT License
+
+Copyright (c) 2025 Renzo Ludena (mobius1983)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Additional Terms for Todo Paranoid VS Code Extension
+
+### Purpose and Scope
+
+This extension is designed to help developers prevent accidental commits of sensitive or temporary comments. The protection mechanisms (Git API integration and Git hooks) are implemented locally on the user's machine and do not transmit any data externally.
+
+### Data Collection and Privacy
+
+- **No data collection**: This extension does not collect, store, or transmit any personal data or code content.
+- **Local operation**: All functionality operates entirely within the user's local development environment.
+- **No telemetry**: No usage statistics or analytics are collected.
+
+### Git Hook Disclaimer
+
+The extension may create Git hooks in your repositories (.git/hooks/pre-commit). These hooks:
+
+- Are created locally on your machine only
+- Do not affect other collaborators unless they also install the extension
+- Persist after extension uninstallation (by design, for security)
+- Can be manually removed at any time by the user
+
+### Liability Limitation
+
+While this extension is designed to prevent accidental commits of sensitive comments, users are responsible for:
+
+- Reviewing their own code before committing
+- Ensuring sensitive information is properly handled
+- Understanding that no tool is 100% foolproof
+- Manually verifying that protection mechanisms work as expected in their environment
+
+### Third-Party Dependencies
+
+This extension may rely on VS Code APIs and Git functionality. Users should ensure they comply with the licenses and terms of service of:
+
+- Microsoft Visual Studio Code
+- Git version control system
+- Any other development tools in their environment
+
+### Support and Maintenance
+
+This software is provided as-is. While the author strives to maintain and improve the extension, there is no guarantee of:
+
+- Continued development or updates
+- Compatibility with future VS Code versions
+- Response time for issues or feature requests
+- Fitness for any particular use case
+
+### Attribution
+
+If you modify or redistribute this extension, please:
+
+- Maintain the original copyright notice
+- Credit the original author (Renzo Ludena / mobius1983)
+- Clearly indicate any modifications made
+- Provide appropriate attribution in documentation
+
+For questions about this license or the extension, please visit:
+https://github.com/mobius1983/todo-paranoid

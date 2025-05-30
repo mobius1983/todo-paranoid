@@ -1,9 +1,9 @@
 {
   "name": "todo-paranoid",
-  "icon": "./icons/marketplace-icon.png",
+  "icon": "icons/marketplace-icon.png",
   "displayName": "Todo Paranoid - Block Forbidden Comments",
   "description": "Prevents committing code with forbidden comments like //PARANOID //NOCOMMIT, etc.",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "publisher": "mobius1983",
   "engines": {
     "vscode": "^1.74.0"
@@ -112,7 +112,7 @@
         {
           "id": "todoParanoid",
           "title": "Todo Paranoid",
-          "icon": "./icons/sidebar-icon.svg"
+          "icon": "icons/sidebar-icon.svg"
         }
       ]
     },
@@ -148,14 +148,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tu-usuario/todo-paranoid"
+    "url": "https://github.com/mobius1983/todo-paranoid"
   },
   "bugs": {
-    "url": "https://github.com/tu-usuario/todo-paranoid/issues"
+    "url": "https://github.com/mobius1983/todo-paranoid/issues"
   },
-  "homepage": "https://github.com/tu-usuario/todo-paranoid#readme",
+  "homepage": "https://github.com/mobius1983/todo-paranoid#readme",
   "license": "MIT",
   "sponsor": {
-    "url": "https://github.com/sponsors/tu-usuario"
+    "url": "https://github.com/sponsors/mobius1983"
   }
 }
