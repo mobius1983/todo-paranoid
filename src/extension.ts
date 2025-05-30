@@ -12,6 +12,13 @@ interface CommentInfo {
   category: 'blocking' | 'tracking';
 }
 
+interface WordGroup {
+  word: string;
+  comments: CommentInfo[];
+  isBlocking: boolean;
+  isWordGroup: true; // Para distinguir entre CommentInfo y WordGroup
+}
+
 // Variables globales para manejar la integración Git
 let gitApiActive = false;
 let originalCommitMethods: Map<any, any> = new Map();
@@ -741,12 +748,16 @@ function clearAllDecorations(document?: vscode.TextDocument) {
   console.log('🧹 All decorations cleared');
 }
 
-class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
+class CodeGuardianProvider
+  implements vscode.TreeDataProvider<CommentInfo | WordGroup>
+{
   private _onDidChangeTreeData: vscode.EventEmitter<
-    CommentInfo | undefined | null | void
-  > = new vscode.EventEmitter<CommentInfo | undefined | null | void>();
+    CommentInfo | WordGroup | undefined | null | void
+  > = new vscode.EventEmitter<
+    CommentInfo | WordGroup | undefined | null | void
+  >();
   readonly onDidChangeTreeData: vscode.Event<
-    CommentInfo | undefined | null | void
+    CommentInfo | WordGroup | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
   private allComments: CommentInfo[] = [];
@@ -756,31 +767,48 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
     this._onDidChangeTreeData.fire();
   }
 
-  getTreeItem(element: CommentInfo): vscode.TreeItem {
-    if (element.word === 'HEADER') {
+  getTreeItem(element: CommentInfo | WordGroup): vscode.TreeItem {
+    // Si es un grupo de palabras
+    if (
+      'word' in element &&
+      'comments' in element &&
+      'isWordGroup' in element
+    ) {
+      const wordGroup = element as WordGroup;
       const item = new vscode.TreeItem(
-        element.text,
-        vscode.TreeItemCollapsibleState.None
+        `${wordGroup.word.toUpperCase()} (${wordGroup.comments.length})`,
+        vscode.TreeItemCollapsibleState.Expanded
       );
-      item.iconPath = element.isBlocking
-        ? new vscode.ThemeIcon(
-            'error',
-            new vscode.ThemeColor('errorForeground')
-          )
-        : new vscode.ThemeIcon('info', new vscode.ThemeColor('foreground'));
-      item.contextValue = 'header';
+
+      if (wordGroup.isBlocking) {
+        item.iconPath = new vscode.ThemeIcon(
+          'error',
+          new vscode.ThemeColor('errorForeground')
+        );
+      } else {
+        item.iconPath = new vscode.ThemeIcon(
+          'tag',
+          new vscode.ThemeColor('warningForeground')
+        );
+      }
+
+      item.contextValue = wordGroup.isBlocking
+        ? 'blockingGroup'
+        : 'trackingGroup';
       return item;
     }
 
+    // Si es un comentario individual
+    const comment = element as CommentInfo;
     const item = new vscode.TreeItem(
-      `${path.basename(element.file)} (Line ${element.line})`,
+      `${path.basename(comment.file)} (Line ${comment.line})`,
       vscode.TreeItemCollapsibleState.None
     );
 
-    item.description = element.text;
-    item.tooltip = `${element.file}:${element.line}\n${element.text}\nWord: ${element.word}\nType: ${element.category}`;
+    item.description = comment.text;
+    item.tooltip = `${comment.file}:${comment.line}\n${comment.text}\nWord: ${comment.word}\nType: ${comment.category}`;
 
-    if (element.isBlocking) {
+    if (comment.isBlocking) {
       item.iconPath = new vscode.ThemeIcon(
         'circle-filled',
         new vscode.ThemeColor('errorForeground')
@@ -798,9 +826,9 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
       command: 'vscode.open',
       title: 'Open File',
       arguments: [
-        vscode.Uri.file(element.file),
+        vscode.Uri.file(comment.file),
         {
-          selection: new vscode.Range(element.line - 1, 0, element.line - 1, 0),
+          selection: new vscode.Range(comment.line - 1, 0, comment.line - 1, 0),
         },
       ],
     };
@@ -808,7 +836,10 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
     return item;
   }
 
-  getChildren(element?: CommentInfo): Thenable<CommentInfo[]> {
+  getChildren(
+    element?: CommentInfo | WordGroup
+  ): Thenable<(CommentInfo | WordGroup)[]> {
+    // Si no hay elemento, mostrar los grupos principales
     if (!element) {
       const blocking = this.allComments.filter((c) => c.isBlocking);
       const tracking = this.allComments.filter((c) => !c.isBlocking);
@@ -817,34 +848,49 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
         return Promise.resolve([]);
       }
 
-      const result: CommentInfo[] = [];
+      const result: WordGroup[] = [];
 
+      // Crear grupos para comentarios bloqueantes (agrupados en uno solo)
       if (blocking.length > 0) {
-        result.push({
-          file: '',
-          line: 0,
-          text: `🚫 BLOCKING (${blocking.length}) - Will prevent commits`,
-          word: 'HEADER',
-          isBlocking: true,
-          category: 'blocking',
-        } as CommentInfo);
-        result.push(...blocking);
+        const blockingWords = [...new Set(blocking.map((c) => c.word))];
+        blockingWords.forEach((word) => {
+          const commentsForWord = blocking.filter((c) => c.word === word);
+          result.push({
+            word: `🚫 ${word} - BLOCKS COMMITS`,
+            comments: commentsForWord,
+            isBlocking: true,
+            isWordGroup: true,
+          });
+        });
       }
 
+      // Crear grupos separados para cada palabra de tracking
       if (tracking.length > 0) {
-        result.push({
-          file: '',
-          line: 0,
-          text: `📝 TRACKING (${tracking.length}) - For organization`,
-          word: 'HEADER',
-          isBlocking: false,
-          category: 'tracking',
-        } as CommentInfo);
-        result.push(...tracking);
+        const trackingWords = [...new Set(tracking.map((c) => c.word))];
+        trackingWords.forEach((word) => {
+          const commentsForWord = tracking.filter((c) => c.word === word);
+          result.push({
+            word: word,
+            comments: commentsForWord,
+            isBlocking: false,
+            isWordGroup: true,
+          });
+        });
       }
 
       return Promise.resolve(result);
     }
+
+    // Si es un grupo de palabras, devolver sus comentarios
+    if (
+      'word' in element &&
+      'comments' in element &&
+      'isWordGroup' in element
+    ) {
+      const wordGroup = element as WordGroup;
+      return Promise.resolve(wordGroup.comments);
+    }
+
     return Promise.resolve([]);
   }
 
@@ -912,49 +958,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
     }
   }
 
-  private scanFileOld(
-    filePath: string,
-    blockingWords: string[],
-    trackingWords: string[]
-  ): void {
-    try {
-      const content = fs.readFileSync(filePath, 'utf8');
-      const lines = content.split('\n');
-
-      lines.forEach((line, index) => {
-        blockingWords.forEach((word) => {
-          const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
-          if (commentRegex.test(line)) {
-            this.allComments.push({
-              file: filePath,
-              line: index + 1,
-              text: line.trim(),
-              word: word,
-              isBlocking: true,
-              category: 'blocking',
-            });
-          }
-        });
-
-        trackingWords.forEach((word) => {
-          const commentRegex = new RegExp(`(//|#).*${word}`, 'i');
-          if (commentRegex.test(line)) {
-            this.allComments.push({
-              file: filePath,
-              line: index + 1,
-              text: line.trim(),
-              word: word,
-              isBlocking: false,
-              category: 'tracking',
-            });
-          }
-        });
-      });
-    } catch (error) {
-      console.error('Error reading file:', filePath, error);
-    }
-  }
-
   private scanFile(
     filePath: string,
     blockingWords: string[],
@@ -967,7 +970,6 @@ class CodeGuardianProvider implements vscode.TreeDataProvider<CommentInfo> {
       lines.forEach((line, index) => {
         // Buscar palabras bloqueantes con regex estricta
         blockingWords.forEach((word) => {
-          // Regex estricta: inicio de línea + espacios opcionales + comentario + espacios opcionales + palabra + boundary
           const commentRegex = new RegExp(`^\\s*(//|#)\\s*${word}\\b`, 'i');
           if (commentRegex.test(line)) {
             this.allComments.push({

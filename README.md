@@ -341,7 +341,6 @@ This means git hooks are still active:
 
 If Todo Paranoid has saved you from embarrassing commits, consider supporting its development:
 
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/mobius1983?style=for-the-badge&logo=github)](https://github.com/sponsors/mobius1983)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/renzoludena)
 [![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/rludena1983)
 
