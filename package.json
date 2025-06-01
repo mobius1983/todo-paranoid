@@ -3,8 +3,8 @@
   "icon": "icons/marketplace-icon.png",
   "displayName": "Todo Paranoid - Block Forbidden Comments",
   "description": "Prevents committing code with forbidden comments like //PARANOID //NOCOMMIT, etc.",
-  "version": "0.0.13",
-  "publisher": "mobius1983",
+  "version": "0.0.18",
+  "publisher": "todo-paranoid",
   "engines": {
     "vscode": "^1.74.0"
   },

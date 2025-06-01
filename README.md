@@ -1,8 +1,8 @@
 # 🛡️ Todo Paranoid - Block Forbidden Comments
 
-[![Version](https://img.shields.io/vscode-marketplace/v/mobius1983.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
-[![Downloads](https://img.shields.io/vscode-marketplace/d/mobius1983.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
-[![Rating](https://img.shields.io/vscode-marketplace/r/mobius1983.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
+[![Version](https://img.shields.io/vscode-marketplace/v/todo-paranoid.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
+[![Downloads](https://img.shields.io/vscode-marketplace/d/todo-paranoid.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
+[![Rating](https://img.shields.io/vscode-marketplace/r/todo-paranoid.todo-paranoid.svg)](https://marketplace.visualstudio.com/items?itemName=mobius1983.todo-paranoid)
 
 > **Never commit embarrassing comments again!** Todo Paranoid prevents you from accidentally committing sensitive comments like `//PARANOID: use fake password` while still allowing you to test your code locally.
 
@@ -35,14 +35,11 @@ Todo Paranoid tracks two types of comments in your code:
 
 ## 📸 Screenshots
 
-![Todo Paranoid Panel](https://raw.githubusercontent.com/mobius1983/todo-paranoid/main/images/panel-screenshot.png)
+![Todo Paranoid Panel](https://cuponperu.s3.us-east-2.amazonaws.com/public/assets/comment_sidebar.png)
 _The sidebar panel shows all your comments organized by type_
 
-![Blocking Comment](https://raw.githubusercontent.com/mobius1983/todo-paranoid/main/images/blocking-comment.png)
+![Blocking Comment](https://cuponperu.s3.us-east-2.amazonaws.com/public/assets/no_commit.png)
 _Blocking comments are highlighted in red and prevent commits_
-
-![Tracking Comments](https://raw.githubusercontent.com/mobius1983/todo-paranoid/main/images/tracking-comments.png)
-_Tracking comments are highlighted in yellow for organization_
 
 ## ⚙️ Configuration
 
@@ -396,21 +393,33 @@ This means git hooks are still active. **Solution:**
 
 ## 📝 Changelog
 
-### v1.0.5
+## [0.0.18] - 2025-05-31
 
-- 🆕 **Advanced protection management** - New "Remove ALL Protections" command
-- 🔍 **Diagnostic tools** - "Analyze Git Hooks" command for troubleshooting
-- 🧹 **Better cleanup** - Handles git hooks that persist after extension removal
-- 🔄 **Multi-account support** - Easier workflow for developers with multiple git accounts
-- 📋 **Improved documentation** - Clear instructions for dual protection system
+### 🔧 Fixed
 
-### v1.0.4
+- **Git Hook Consistency**: Fixed inconsistent regex patterns between VS Code detection and Git pre-commit hooks
+  - Git hooks now properly block comments with spaces like `// PARANOID` and `//PARANOID` consistently
+  - Unified regex pattern across all blocking mechanisms (Git API, Git hooks, and visual highlighting)
+  - Resolved issue where comments were visually highlighted but not blocked during commit operations
 
-- 🛠️ **Dual protection system** - Git API integration + physical git hooks
-- ⚡ **Performance improvements** - Faster scanning and real-time updates
-- 🎨 **Enhanced visual indicators** - Better highlighting for different comment types
+### 🎨 Improved
 
-### v1.0.0
+- **Enhanced Visual Highlighting**: Updated comment highlighting with improved colors and styling
+  - Blocking comments now use red theme (`#f85149`) with subtle background and border
+  - Tracking comments use amber theme (`#fbbc04`/`#bf8700`) for better visual distinction
+  - Added bold font weight for blocking comments and medium weight for tracking comments
+  - Improved border radius and opacity for better readability
+
+### 🚀 Enhanced
+
+- **Stricter Pattern Matching**: All blocking mechanisms now use consistent strict regex patterns
+  - Comments must start with `//` or `#` followed by optional whitespace, then the blocking word
+  - Prevents false positives like `// This code is PARANOID` from being blocked
+  - Maintains protection for legitimate blocking comments like `// PARANOID: test data`
+
+---
+
+## [0.0.15] - 2025-05-29
 
 - ✨ Initial release
 - 🛡️ Blocking and tracking comment detection
@@ -418,6 +427,8 @@ This means git hooks are still active. **Solution:**
 - 📋 Sidebar panel with organized view
 - 🔐 Optional Git hook protection
 - ⚙️ Fully configurable word lists
+
+---
 
 ## ❤️ Support Todo Paranoid
 

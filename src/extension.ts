@@ -196,11 +196,15 @@ function generatePreCommitHook(): string {
 
 BLOCKING_WORDS="${blockingWords.join('|')}"
 
-if git diff --cached --name-only | xargs grep -l -E "(//|#).*($BLOCKING_WORDS)" 2>/dev/null; then
+if git diff --cached --name-only | xargs grep -l -E "^[[:space:]]*(//|#)[[:space:]]*(${blockingWords.join(
+    '|'
+  )})[[:space:][:punct:]]" 2>/dev/null; then
     echo ""
     echo "🚫 Todo Paranoid: Cannot commit! BLOCKING comments found:"
     echo "================================================================"
-    git diff --cached --name-only | xargs grep -n -E "(//|#).*($BLOCKING_WORDS)" 2>/dev/null | while read -r line; do
+    git diff --cached --name-only | xargs grep -n -E "^[[:space:]]*(//|#)[[:space:]]*(${blockingWords.join(
+      '|'
+    )})[[:space:][:punct:]]" 2>/dev/null | while read -r line; do
         echo "📁 $line"
     done
     echo "================================================================"
@@ -673,19 +677,39 @@ function initializeDecorations() {
   if (trackingDecorationType) {
     trackingDecorationType.dispose();
   }
+  // blockingDecorationType = vscode.window.createTextEditorDecorationType({
+  //   backgroundColor: 'rgba(255, 0, 0, 0.3)',
+  //   border: '2px solid red',
+  //   borderRadius: '2px',
+  //   overviewRulerColor: 'red',
+  //   overviewRulerLane: vscode.OverviewRulerLane.Right,
+  // });
+
+  // trackingDecorationType = vscode.window.createTextEditorDecorationType({
+  //   backgroundColor: 'rgba(255, 255, 0, 0.2)',
+  //   border: '1px solid orange',
+  //   borderRadius: '2px',
+  //   overviewRulerColor: 'orange',
+  //   overviewRulerLane: vscode.OverviewRulerLane.Right,
+  // });
+
   blockingDecorationType = vscode.window.createTextEditorDecorationType({
-    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-    border: '2px solid red',
-    borderRadius: '2px',
-    overviewRulerColor: 'red',
+    backgroundColor: 'rgba(248, 81, 73, 0.1)',
+    border: '1px solid rgba(248, 81, 73, 0.3)',
+    borderRadius: '4px',
+    color: '#f85149', // Color del texto
+    fontWeight: 'bold',
+    overviewRulerColor: '#f85149',
     overviewRulerLane: vscode.OverviewRulerLane.Right,
   });
 
   trackingDecorationType = vscode.window.createTextEditorDecorationType({
-    backgroundColor: 'rgba(255, 255, 0, 0.2)',
-    border: '1px solid orange',
-    borderRadius: '2px',
-    overviewRulerColor: 'orange',
+    backgroundColor: 'rgba(251, 188, 4, 0.08)',
+    border: '1px solid rgba(251, 188, 4, 0.3)',
+    borderRadius: '4px',
+    color: '#bf8700', // Color del texto más oscuro
+    fontWeight: '500',
+    overviewRulerColor: '#fbbc04',
     overviewRulerLane: vscode.OverviewRulerLane.Right,
   });
 }
