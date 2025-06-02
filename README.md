@@ -434,8 +434,11 @@ This means git hooks are still active. **Solution:**
 
 If Todo Paranoid has saved you from embarrassing commits, consider supporting its development:
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://ko-fi.com/renzoludena)
-[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/rludena1983)
+[![PayPal.Me](https://img.shields.io/badge/PayPal.Me-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/rludena1983)
+
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=4D98LB8PR6UPA)
+
+Your support helps keep this project alive and improving! 🚀
 
 ## 🐛 Issues & Feature Requests
 
